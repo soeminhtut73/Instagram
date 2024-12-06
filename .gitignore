@@ -1,0 +1,14 @@
+# Xcode
+*.xcuserdata
+*.xccheckout
+*.xcodeproj/*
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcshareddata/
+
+# Swift Packages
+.build/
+.swiftpm/
+
+# CocoaPods
+Pods/
+Podfile.lock
