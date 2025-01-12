@@ -123,15 +123,24 @@ class FeedCell: UICollectionViewCell {
         
         /// set layout for likeLabel stackView
         addSubview(likesLabel)
-        likesLabel.anchor(top: likeButton.bottomAnchor, left: leftAnchor, paddingTop: -4, paddingLeft: 8)
+        likesLabel.anchor(top: likeButton.bottomAnchor,
+                          left: leftAnchor,
+                          paddingTop: -4,
+                          paddingLeft: 8)
         
         /// set layout for captionLabel stackView
         addSubview(captionLabel)
-        captionLabel.anchor(top: likesLabel.bottomAnchor, left: leftAnchor, paddingTop: 8, paddingLeft: 8)
+        captionLabel.anchor(top: likesLabel.bottomAnchor,
+                            left: leftAnchor,
+                            paddingTop: 8,
+                            paddingLeft: 8)
         
         /// set layout for postTimeLabel stackView
         addSubview(postTimeLabel)
-        postTimeLabel.anchor(top: captionLabel.bottomAnchor, left: leftAnchor, paddingTop: 8, paddingLeft: 8)
+        postTimeLabel.anchor(top: captionLabel.bottomAnchor,
+                             left: leftAnchor,
+                             paddingTop: 8,
+                             paddingLeft: 8)
         
         
     }

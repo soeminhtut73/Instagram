@@ -14,7 +14,7 @@ class ImageSelectController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        view.backgroundColor = .cyan
+        view.backgroundColor = .systemBackground
     }
     
     //MARK: - Helper Functions

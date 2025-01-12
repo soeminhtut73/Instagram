@@ -5,13 +5,19 @@
 //  Created by S M H  on 12/12/2024.
 //
 
-import UIKit 
+import UIKit
+
+protocol AuthenticationDelegate: AnyObject {
+    func didAuthenticate()
+}
 
 class LoginController: UIViewController {
     
     //MARK: - Properties
     
     private var loginViewModel = LoginViewModel()
+    
+    weak var delegate: AuthenticationDelegate?
     
     private var iconImageView: UIImageView = {
         let imageView = UIImageView()
@@ -43,6 +49,7 @@ class LoginController: UIViewController {
         button.isEnabled = false
         button.layer.cornerRadius = 10
         button.setHeight(50)
+        button.addTarget(self, action: #selector(handleLoginButton), for: .touchUpInside)
         return button
     }()
     
@@ -71,8 +78,25 @@ class LoginController: UIViewController {
     
     //MARK: - Selectors
     
+    @objc func handleLoginButton() {
+        guard let email = emailTextField.text else { return }
+        guard let password = passwordTextField.text else { return }
+        
+        DispatchQueue.main.async {
+            AuthServices.logUserIn(email: email, password: password) { result, error in
+                if let error = error {
+                    print("Debug: Error logging user in: \(error.localizedDescription)")
+                }
+                
+                print("Debug: User Login Successful!")
+                self.delegate?.didAuthenticate()
+            }
+        }
+    }
+    
     @objc func handleCreateAccountButton() {
         let controller = RegisterationController()
+        controller.delegate = delegate
         navigationController?.pushViewController(controller, animated: true)
     }
     

@@ -14,6 +14,8 @@ class RegisterationController: UIViewController {
     private var registerationViewModel = RegisterationViewModel()
     private var profileImage: UIImage?
     
+    weak var delegate: AuthenticationDelegate?
+    
     private let uploadProfileImageButton: UIButton = {
         let button = UIButton()
         button.setImage(UIImage(named: "plus_photo_white"), for: .normal)
@@ -83,12 +85,20 @@ class RegisterationController: UIViewController {
         guard let email = emailTextField.text else { return }
         guard let password = passwordTextField.text else { return }
         guard let fullname = fullNameTextField.text else { return }
-        guard let username = userNameTextField.text else { return }
+        guard let username = userNameTextField.text?.lowercased() else { return }
         guard let image = self.profileImage else { return }
         
         let authCrentials = AuthCredential(email: email, password: password, username: fullname, fullName: username, profileImage: image)
         
-        AuthServices.registerUser(withCredential: authCrentials)
+        AuthServices.registerUser(withCredential: authCrentials) { error in
+            if let error = error {
+                print("Debug: Fail to create user: \(error.localizedDescription)")
+                return
+            }
+            
+            self.delegate?.didAuthenticate()
+            print("Debug: User resister successfully created!")
+        }
     }
     
     @objc func handleShowLogin() {
