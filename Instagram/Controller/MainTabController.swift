@@ -13,7 +13,7 @@ class MainTabController: UITabBarController {
     
     //MARK: - Properties
     
-    private var user: User? {
+    var user: User? {
         didSet {
             guard let user = user else { return }
             configureViewControllers(with: user)
@@ -31,7 +31,9 @@ class MainTabController: UITabBarController {
     //MARK: - API
     
     func fetchCurrentUser() {
-        UserServices.getCurrentUser { user in
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        UserServices.getUser(uid: userID) { user in
             self.user = user
         }
     }
@@ -123,20 +125,41 @@ extension MainTabController: UITabBarControllerDelegate {
             picker.modalPresentationStyle = .fullScreen
             present(picker, animated: true)
             
+            guard let user = user else { return false }
+            
             picker.didFinishPicking { items, _ in
                 
                 picker.dismiss(animated: false) {
                     guard let image = items.singlePhoto?.image else { return }
                     
                     let controller = UploadPostController()
-//                    self.navigationController?.pushViewController(controller, animated: true)
+                    controller.delegate = self
+                    controller.selectedImage = image
+                    controller.user = user
+                    
                     let nav = UINavigationController(rootViewController: controller)
                     nav.modalPresentationStyle = .fullScreen
                     self.present(nav, animated: false)
                 }
             }
         }
-        
         return true
+    }
+}
+
+//MARK: - UploadPostControllerDelegate
+
+extension MainTabController: UploadPostControllerDelegate {
+    
+    // call after post upload finish from UploadPostController
+    func didUploadPost(_ controller: UploadPostController) {
+        
+        guard let navigationController = viewControllers?.first as? UINavigationController else { return print("debug: navigationController not found") }
+        guard let feedController = navigationController.viewControllers.first as? FeedController else { return print("debug: feedController not found") }
+        feedController.fetchPosts()
+        
+        selectedIndex = 0
+        controller.dismiss(animated: true)
+        
     }
 }

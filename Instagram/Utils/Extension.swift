@@ -6,11 +6,11 @@
 //
 
 import UIKit
-//import JGProgressHUD
+import JGProgressHUD
 
 
 extension UIViewController {
-//    static let hud = JGProgressHUD(style: .dark)
+    static let hud = JGProgressHUD(style: .dark)
     
     func configureGradientLayer() {
         let gradient = CAGradientLayer()
@@ -20,15 +20,16 @@ extension UIViewController {
         gradient.frame = view.frame
     }
     
-//    func showLoader(_ show: Bool) {
-//        view.endEditing(true)
-//        
-//        if show {
-//            UIViewController.hud.show(in: view)
-//        } else {
-//            UIViewController.hud.dismiss()
-//        }
-//    }
+    func showLoader(_ show: Bool) {
+        view.endEditing(true)
+        
+        if show {
+            UIViewController.hud.textLabel.text = "Loading..."
+            UIViewController.hud.show(in: view)
+        } else {
+            UIViewController.hud.dismiss(afterDelay: 1.5, animated: true)
+        }
+    }
     
     func showMessage(withTitle title: String, message: String) {
         let alert = UIAlertController(title: title, message: message, preferredStyle: .alert)
@@ -39,13 +40,27 @@ extension UIViewController {
 
 extension UIButton {
     func attributedTitle(firstPart: String, secondPart: String) {
-        let atts: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(white: 1, alpha: 0.87), .font: UIFont.systemFont(ofSize: 16)]
+        let atts: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor(white: 1, alpha: 0.87), .font: UIFont.systemFont(ofSize: 16)]
         let attributedTitle = NSMutableAttributedString(string: "\(firstPart) ", attributes: atts)
         
-        let boldAtts: [NSAttributedString.Key: Any] = [.foregroundColor: UIColor(white: 1, alpha: 0.87), .font: UIFont.boldSystemFont(ofSize: 16)]
+        let boldAtts: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor(white: 1, alpha: 0.87), .font: UIFont.boldSystemFont(ofSize: 16)]
         attributedTitle.append(NSAttributedString(string: secondPart, attributes: boldAtts))
         
         setAttributedTitle(attributedTitle, for: .normal)
+    }
+}
+
+extension UILabel {
+    func attributedLabel(firstPart: String, secondPart: String, timestamp: String) {
+        let boldAtts: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor.black, .font: UIFont.boldSystemFont(ofSize: 13)]
+        let attributedTitle = NSMutableAttributedString(string: "\(firstPart) ", attributes: boldAtts)
+        
+        let atts: [NSAttributedString.Key : Any] = [.foregroundColor: UIColor.black, .font: UIFont.systemFont(ofSize: 13)]
+        attributedTitle.append(NSAttributedString(string: secondPart, attributes: atts))
+        
+        attributedTitle.append(NSAttributedString(string: " \(timestamp)", attributes: [.foregroundColor : UIColor.lightGray, .font : UIFont.systemFont(ofSize: 11)]))
+        
+        attributedText = attributedTitle
     }
 }
 

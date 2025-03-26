@@ -17,7 +17,7 @@ class CustomTextView: UITextView {
         }
     }
     
-    private let placeholderLabel: UILabel = {
+    let placeholderLabel: UILabel = {
         let label = UILabel()
         label.font = .systemFont(ofSize: 15)
         label.textColor = .secondaryLabel
@@ -25,18 +25,29 @@ class CustomTextView: UITextView {
         return label
     }()
     
+    var placeholderShouldCenterY : Bool = true {
+        didSet {
+            if placeholderShouldCenterY {
+                
+                placeholderLabel.anchor(left: leftAnchor, right: rightAnchor, paddingLeft: 8)
+                
+                placeholderLabel.centerY(inView: self)
+                
+            } else {
+                
+                placeholderLabel.anchor(top: topAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 6.5, paddingLeft: 5, paddingRight: 5)
+                
+            }
+        }
+    }
+    
     //MARK: - Lifecycle
     
     override init(frame: CGRect, textContainer: NSTextContainer?) {
         super.init(frame: frame, textContainer: textContainer)
         
         addSubview(placeholderLabel)
-        placeholderLabel.anchor(top: topAnchor,
-                                left: leftAnchor,
-                                right: rightAnchor,
-                                paddingTop: 6.5,
-                                paddingLeft: 5,
-                                paddingRight: 5)
+        
         
         NotificationCenter.default.addObserver(self, selector: #selector(textDidChange), name: UITextView.textDidChangeNotification, object: nil)
     }

@@ -6,8 +6,17 @@
 //
 
 import UIKit
+import SDWebImage
 
 class ProfileCell: UICollectionViewCell {
+    
+    //MARK: - Properties
+    
+    var viewModel: PostViewModel? {
+        didSet {
+            configurePostData()
+        }
+    }
     
     //MARK: - Lifecycle
     
@@ -34,4 +43,9 @@ class ProfileCell: UICollectionViewCell {
     
     //MARK: - HelperFunction
 
+    func configurePostData() {
+        guard let viewModel = viewModel else { return }
+        
+        imageView.sd_setImage(with: viewModel.imageURL)
+    }
 }

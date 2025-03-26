@@ -44,5 +44,17 @@ struct RegisterationViewModel: AuthenticationViewModel {
     var buttonBackgroundColor: UIColor {
         isValid ? UIColor.systemPurple.withAlphaComponent(0.7) : UIColor.systemPurple.withAlphaComponent(0.3)
     }
+}
+
+struct ResetPasswordViewModel: AuthenticationViewModel {
+    var email: String?
     
+    var isValid: Bool {
+        guard let email else { return false }
+        return !email.isEmpty
+    }
+    
+    var buttonBackgroundColor: UIColor {
+        isValid ? UIColor.systemPurple.withAlphaComponent(0.7) : UIColor.systemPurple.withAlphaComponent(0.3)
+    }
 }

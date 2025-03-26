@@ -12,3 +12,6 @@ import FirebaseStorage
 let COLLECTION_USERS = Firestore.firestore().collection("users")
 let COLLECTION_FOLLOWING_USERS = Firestore.firestore().collection("user-following")
 let COLLECTION_FOLLOWER_USERS = Firestore.firestore().collection("user-followers")
+let COLLECTION_POSTS = Firestore.firestore().collection("posts")
+let COLLECTION_NOTIFICATIONS = Firestore.firestore().collection("notifications")
+

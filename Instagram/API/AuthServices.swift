@@ -25,7 +25,8 @@ struct AuthServices {
     }
     
     static func registerUser(withCredential credential: AuthCredential, completion: @escaping(Error?) -> Void) {
-        ImageUploader.uploadImage(image: credential.profileImage) { imageURL in
+
+        ImageUploader.uploadImage(image: credential.profileImage, image_path: "profile_images") { imageURL in
             
             Auth.auth().createUser(withEmail: credential.email, password: credential.password) { result, error in
                 /// catch error to create user
@@ -36,14 +37,18 @@ struct AuthServices {
                 
                 guard let uid = result?.user.uid else { return }
                 
-                let data : [String : Any] = ["email" : credential.email,
-                                             "username" : credential.username,
-                                             "fullName" : credential.fullName,
-                                             "uid" : uid,
-                                             "profileImageUrl" : imageURL]
+                let data : [String : Any] = ["email"            : credential.email,
+                                             "username"         : credential.username,
+                                             "fullName"         : credential.fullName,
+                                             "uid"              : uid,
+                                             "profileImageUrl"  : imageURL]
                 
                 COLLECTION_USERS.document(uid).setData(data, completion: completion)
             }
         }
+    }
+    
+    static func resetPassword(withEmail email: String, completion: @escaping(FirestoreCompletion)) {
+        Auth.auth().sendPasswordReset(withEmail: email, completion: completion)
     }
 }

@@ -7,35 +7,37 @@
 
 import UIKit
 import FirebaseAuth
+import Firebase
 
 struct User {
-    var email: String
-    var fullName: String
-    var username: String
-    var profileImageUrl: String
-    var uid: String
+    var email           : String
+    var fullName        : String
+    var username        : String
+    var profileImageUrl : String
+    var uid             : String
     
-    var isFollowed: Bool = false
+    var isFollowed      : Bool = false
     
-    var isCurrentUser: Bool {
+    var isCurrentUser   : Bool {
         return Auth.auth().currentUser?.uid == uid
     }
     
-    var stats: UserStats!
+    var stats           : UserStats!
+    
+    var lastFetchPostTimestamp : Timestamp?
     
     init(dictionary: [String: Any]) {
-        self.email = dictionary["email"] as? String ?? ""
-        self.fullName = dictionary["fullName"] as? String ?? ""
-        self.username = dictionary["username"] as? String ?? ""
-        self.profileImageUrl = dictionary["profileImageUrl"] as? String ?? ""
-        self.uid = dictionary["uid"] as? String ?? ""
-        
-        self.stats = UserStats(followers: 0, followings: 0)
+        self.email              = dictionary["email"] as? String ?? ""
+        self.fullName           = dictionary["fullName"] as? String ?? ""
+        self.username           = dictionary["username"] as? String ?? ""
+        self.profileImageUrl    = dictionary["profileImageUrl"] as? String ?? ""
+        self.uid                = dictionary["uid"] as? String ?? ""
+        self.stats              = UserStats(followers: 0, followings: 0, posts: 0)
     }
 }
 
 struct UserStats {
-    let followers: Int
-    let followings: Int
-//    let posts: Int
+    var followers: Int
+    var followings: Int
+    var posts: Int
 }

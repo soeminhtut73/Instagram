@@ -42,16 +42,16 @@ struct ProfileHeaderViewModel {
         return user.isCurrentUser ? true : false
     }
     
-    var numberOfFollwers: NSAttributedString {
+    var numberOfFollowers: NSAttributedString {
         return attributeStatText(value: user.stats.followers, label: "Followers")
     }
     
-    var numberOfFollwings: NSAttributedString {
-        return attributeStatText(value: user.stats.followings, label: "Followers")
+    var numberOfFollowings: NSAttributedString {
+        return attributeStatText(value: user.stats.followings, label: "Followings")
     }
     
     var numberOfPosts: NSAttributedString {
-        return attributeStatText(value: 0, label: "Followers")
+        return attributeStatText(value: user.stats.posts, label: "Posts")
     }
     
     init(user: User) {

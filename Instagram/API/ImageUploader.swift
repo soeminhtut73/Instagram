@@ -11,14 +11,16 @@ let storage = Storage.storage()
 let storageRef = storage.reference()
 
 struct ImageUploader {
-    static func uploadImage(image: UIImage, completion: @escaping(String) -> Void) {
+    static func uploadImage(image: UIImage, image_path: String, completion: @escaping(String) -> Void) {
         
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        
         let filename = UUID().uuidString
         
-        let imageRef = storage.reference(withPath: "/profile_images/\(filename).jpg")
+        let imageRef = storage.reference(withPath: "/\(image_path)/\(filename).jpg")
         
         let _ = imageRef.putData(imageData) { metadata, error in
+            
             if let error = error {
                 print("Debug: Fail to upload profile_images \(error.localizedDescription)")
             }

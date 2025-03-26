@@ -10,6 +10,10 @@ import SDWebImage
 
 protocol ProfileHeaderCellDelegate: AnyObject {
     func didTapEditProfileFollowButton(_ cell: ProfileHeaderCell, didTapButtonFor user: User)
+    
+    func didTapFollowerLabel(_ cell: ProfileHeaderCell, didTapButtonFor user: User, type: buttonType)
+    
+    func didTapFollowingLabel(_ cell: ProfileHeaderCell, didTapButtonFor user: User, type: buttonType)
 }
 
 class ProfileHeaderCell: UICollectionReusableView {
@@ -53,7 +57,6 @@ class ProfileHeaderCell: UICollectionReusableView {
         let label = UILabel()
         label.numberOfLines = 0
         label.textAlignment = .center
-//        label.attributedText = attributeStatText(value: 5, label: "Posts")
         return label
     }()
     
@@ -61,7 +64,11 @@ class ProfileHeaderCell: UICollectionReusableView {
         let label = UILabel()
         label.numberOfLines = 0
         label.textAlignment = .center
-//        label.attributedText = attributeStatText(value: 937, label: "Followers")
+        label.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleFollowerLabelTap))
+        label.addGestureRecognizer(tapGesture)
+        
         return label
     }()
     
@@ -69,7 +76,11 @@ class ProfileHeaderCell: UICollectionReusableView {
         let label = UILabel()
         label.numberOfLines = 0
         label.textAlignment = .center
-//        label.attributedText = attributeStatText(value: 50, label: "Followings")
+        label.isUserInteractionEnabled = true
+        
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleFollowingLabelTap))
+        label.addGestureRecognizer(tapGesture)
+        
         return label
     }()
     
@@ -163,6 +174,16 @@ class ProfileHeaderCell: UICollectionReusableView {
         delegate?.didTapEditProfileFollowButton(self, didTapButtonFor: viewModel.user)
     }
     
+    @objc func handleFollowingLabelTap() {
+        guard let viewModel = viewModel else { return }
+        delegate?.didTapFollowingLabel(self, didTapButtonFor: viewModel.user, type: .followings)
+    }
+    
+    @objc func handleFollowerLabelTap() {
+        guard let viewModel = viewModel else { return }
+        delegate?.didTapFollowerLabel(self, didTapButtonFor: viewModel.user, type: .followers)
+    }
+    
     //MARK: - HelperFunctions
     
     func configureUserData() {
@@ -179,13 +200,25 @@ class ProfileHeaderCell: UICollectionReusableView {
         editProfileFollowButton.backgroundColor = viewModel.folowButtonBackgroundColor
         
         postLabel.attributedText = viewModel.numberOfPosts
-        followerLabel.attributedText = viewModel.numberOfFollwers
-        followingLabel.attributedText = viewModel.numberOfFollwings
+        followerLabel.attributedText = viewModel.numberOfFollowers
+        followingLabel.attributedText = viewModel.numberOfFollowings
     }
     
     func attributeStatText(value: Int, label: String) -> NSAttributedString {
         let attributedText = NSMutableAttributedString(string: " \(value)\n", attributes: [.font: UIFont.boldSystemFont(ofSize: 14)])
         attributedText.append(NSAttributedString(string: label, attributes: [.font: UIFont.systemFont(ofSize: 14), .foregroundColor: UIColor.lightGray]))
         return attributedText
+    }
+}
+
+enum buttonType: String {
+    case followings
+    case followers
+    
+    var buttonText: String {
+        switch self {
+        case .followers: return "Followers"
+        case .followings: return "Followings"
+        }
     }
 }

@@ -7,32 +7,47 @@
 
 import UIKit
 
+protocol UploadPostControllerDelegate: AnyObject {
+    func didUploadPost(_ controller: UploadPostController)
+}
+
 class UploadPostController : UIViewController {
     
     //MARK: - Properties
     
-    private let imageView: UIImageView = {
-        let imageView = UIImageView()
-        imageView.contentMode = .scaleAspectFill
-        imageView.clipsToBounds = true
-        imageView.image = UIImage(named: "venom-7")
-        return imageView
+    var selectedImage: UIImage? {
+        didSet {
+            guard let selectedImage = selectedImage else { return }
+            postImage.image = selectedImage
+        }
+    }
+    
+    var user : User?
+    
+    weak var delegate: UploadPostControllerDelegate?
+    
+    private let postImage: UIImageView = {
+        let postImage           = UIImageView()
+        postImage.contentMode   = .scaleAspectFill
+        postImage.clipsToBounds = true
+        return postImage
     }()
     
-    private let textView: UITextView = {
-        let textView = CustomTextView()
-        textView.placeholderText = "Share your thoughts..."
-        textView.font = .systemFont(ofSize: 15)
-        textView.textColor = .label
-        return textView
+    private let captionText: UITextView = {
+        let captionText = CustomTextView()
+        captionText.placeholderText             = "Share your thoughts..."
+        captionText.font                        = .systemFont(ofSize: 15)
+        captionText.textColor                   = .label
+        captionText.placeholderShouldCenterY    = false
+        return captionText
     }()
     
     private let characterCount: UILabel = {
-        let label = UILabel()
-        label.font = .systemFont(ofSize: 16)
-        label.textColor = .secondaryLabel
-        label.textAlignment = .center
-        label.text = "0/100"
+        let label               = UILabel()
+        label.font              = .systemFont(ofSize: 16)
+        label.textColor         = .secondaryLabel
+        label.textAlignment     = .center
+        label.text              = "0/100"
         return label
     }()
     
@@ -53,8 +68,24 @@ class UploadPostController : UIViewController {
         dismiss(animated: true)
     }
     
-    @objc func didTapShareButton() {
-        print("debug: didTapShareButton")
+    @objc func didTapSaveButton() {
+        
+        guard let image = postImage.image else { return }
+        
+        guard let user = user else { return }
+        
+        showLoader(true)
+        
+        PostServices.uploadPost(user: user, image: image, caption: captionText.text) { error in
+            
+            self.showLoader(false)
+            
+            if let error = error {
+                print("Debug: Error uploading post : \(error.localizedDescription)")
+                return
+            }
+            self.delegate?.didUploadPost(self)
+        }
     }
     
     //MARK: - Helper Functions
@@ -63,21 +94,21 @@ class UploadPostController : UIViewController {
         
         navigationItem.title = "Upload Post"
         
-        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(didTapShareButton))
+        navigationItem.rightBarButtonItem = UIBarButtonItem(barButtonSystemItem: .done, target: self, action: #selector(didTapSaveButton))
         
         navigationItem.leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .cancel, target: self, action: #selector(didTapCancleButton))
         
-        view.addSubview(imageView)
-        imageView.anchor(top: view.safeAreaLayoutGuide.topAnchor,
+        view.addSubview(postImage)
+        postImage.anchor(top: view.safeAreaLayoutGuide.topAnchor,
                          paddingTop: 12)
-        imageView.setDimensions(height: 180, width: 180)
-        imageView.centerX(inView: view)
-        imageView.layer.cornerRadius = 10
-        imageView.clipsToBounds = true
+        postImage.setDimensions(height: 180, width: 180)
+        postImage.centerX(inView: view)
+        postImage.layer.cornerRadius = 10
+        postImage.clipsToBounds = true
         
-        view.addSubview(textView)
-        textView.delegate = self
-        textView.anchor(top: imageView.bottomAnchor,
+        view.addSubview(captionText)
+        captionText.delegate = self
+        captionText.anchor(top: postImage.bottomAnchor,
                         left: view.leftAnchor,
                         right: view.rightAnchor,
                         paddingTop: 16,
@@ -86,19 +117,19 @@ class UploadPostController : UIViewController {
                         height: 64)
         
         view.addSubview(characterCount)
-        characterCount.anchor(top: textView.bottomAnchor, right: view.rightAnchor, paddingTop: 16, paddingRight: 12)
+        characterCount.anchor(top: captionText.bottomAnchor, right: view.rightAnchor, paddingTop: 16, paddingRight: 12)
     }
     
-    func checkCharacterMaxLength(_ textView: UITextView) {
-        if textView.text.count > 100 {
-            textView.deleteBackward()
+    func checkCharacterMaxLength(_ captionText: UITextView) {
+        if captionText.text.count > 100 {
+            captionText.deleteBackward()
         }
     }
 }
 
 extension UploadPostController: UITextViewDelegate {
-    func textViewDidChange(_ textView: UITextView) {
-        characterCount.text = "\(textView.text.count)/100"
-        checkCharacterMaxLength(textView)
+    func textViewDidChange(_ captionText: UITextView) {
+        characterCount.text = "\(captionText.text.count)/100"
+        checkCharacterMaxLength(captionText)
     }
 }

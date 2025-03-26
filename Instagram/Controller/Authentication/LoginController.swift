@@ -40,7 +40,7 @@ class LoginController: UIViewController {
         return textField
     }()
     
-    private var loginButton: UIButton = {
+    private lazy var loginButton: UIButton = {
         let button = UIButton()
         button.setTitle("Login", for: .normal)
         button.setTitleColor(.white, for: .normal)
@@ -53,14 +53,14 @@ class LoginController: UIViewController {
         return button
     }()
     
-    private let forgotPasswordButton: UIButton = {
+    private lazy var forgotPasswordButton: UIButton = {
         let button = UIButton()
         button.attributedTitle(firstPart: "Forgot your password?", secondPart: "Reset Here.")
         button.addTarget(self, action: #selector(handleForgotPasswordButtoon), for: .touchUpInside)
         return button
     }()
     
-    private let createAccountButton: UIButton = {
+    private lazy var createAccountButton: UIButton = {
         let button = UIButton()
         button.attributedTitle(firstPart: "Don't have an account?", secondPart: "Sign Up.")
         button.addTarget(self, action: #selector(handleCreateAccountButton), for: .touchUpInside)
@@ -101,7 +101,9 @@ class LoginController: UIViewController {
     }
     
     @objc func handleForgotPasswordButtoon() {
-        print("Forgot password button.")
+        let controller = ResetPasswordController()
+        controller.delegate = self
+        navigationController?.pushViewController(controller, animated: true)
     }
     
     @objc func textDidChange(sender: UITextField) {
@@ -156,5 +158,16 @@ extension LoginController: UpdateFormButton {
     func updateFormButton() {
         loginButton.isEnabled = loginViewModel.isValid
         loginButton.backgroundColor = loginViewModel.buttonBackgroundColor
+    }
+}
+
+//MARK: - ResetPasswordController Delegate
+
+extension LoginController: ResetPasswordControllerDelegate {
+    
+    func didTapResetPasswordButton(_ controller: ResetPasswordController) {
+        navigationController?.popViewController(animated: true)
+        
+        showMessage(withTitle: "Success", message: "We send you an email to reset your password!")
     }
 }
