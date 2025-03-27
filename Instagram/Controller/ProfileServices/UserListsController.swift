@@ -15,13 +15,13 @@ class UserListsController: UITableViewController {
     
     var user : User? {
         didSet{
-            fetchUsers()
+//            fetchUsers()
         }
     }
     
     private var users = [User]() {
         didSet {
-            tableView.reloadData()
+//            tableView.reloadData()
         }
     }
     
@@ -32,7 +32,38 @@ class UserListsController: UITableViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         configureUI()
+//        fetchUsers()
+    }
+    
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        
+        // Loop through visible cells and show skeleton on specific subviews
+        for cell in tableView.visibleCells {
+            if let customCell = cell as? UserListTableViewCell {
+                customCell.profileImageView.showSkeletonAnimation()
+                customCell.usernameLabel.showSkeletonAnimation()
+                customCell.followButton.showSkeletonAnimation()
+            }
+        }
+        
         fetchUsers()
+        
+        // Simulate data loading delay (e.g., API call)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) { [weak self] in
+            guard let self = self else { return }
+            
+            self.tableView.reloadData()
+            
+            // Remove skeleton animations after data is loaded
+            for cell in self.tableView.visibleCells {
+                if let customCell = cell as? UserListTableViewCell {
+                    customCell.profileImageView.hideSkeletonAnimation()
+                    customCell.usernameLabel.hideSkeletonAnimation()
+                    customCell.followButton.hideSkeletonAnimation()
+                }
+            }
+        }
     }
     
     //MARK: - Helper Functions
@@ -83,19 +114,24 @@ class UserListsController: UITableViewController {
 extension UserListsController {
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.count
+        return users.isEmpty ? 1 : users.count
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView
             .dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! UserListTableViewCell
         
-        guard let type = type else { return cell }
-//        cell.configureData(with: users[indexPath.row], for: type)
-        cell.type = type
-        cell.user = users[indexPath.row]
-        cell.delegate = self
-        return cell
+        if users.isEmpty {
+            cell.isUserInteractionEnabled = false
+            return cell
+        } else {
+            guard let type = type else { return cell }
+            
+            cell.type = type
+            cell.user = users[indexPath.row]
+            cell.delegate = self
+            return cell
+        }
     }
 }
 

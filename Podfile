@@ -34,6 +34,5 @@ target 'Instagram' do
   pod 'SDWebImage'
   pod 'JGProgressHUD'
   pod 'YPImagePicker'
-  pod 'SkeletonView'
 
 end

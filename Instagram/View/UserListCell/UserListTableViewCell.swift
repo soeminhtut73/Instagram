@@ -26,28 +26,27 @@ class UserListTableViewCell: UITableViewCell {
     
     weak var delegate: UserListTableViewCellDelegate?
     
-    private let profileImageView: UIImageView = {
+    lazy var profileImageView: UIImageView = {
         let imageView = UIImageView()
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
+        imageView.backgroundColor = .clear
         return imageView
     }()
     
-    private let usernameLabel: UILabel = {
+    lazy var usernameLabel: UILabel = {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         label.textColor = .label
-        label.text = "venom"
         return label
     }()
     
-    private lazy var followButton: UIButton = {
+    lazy var followButton: UIButton = {
         let button = UIButton(type: .system)
         button.setTitleColor(.label, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .medium)
-        button.layer.borderWidth = 0.5
-        button.layer.cornerRadius = 3
         
+        button.backgroundColor = .clear
         button.addTarget(self, action: #selector(handleFollowButton), for: .touchUpInside)
         return button
     }()
@@ -59,18 +58,20 @@ class UserListTableViewCell: UITableViewCell {
         
         selectionStyle = .none
         
-        addSubview(profileImageView)
-            
+        contentView.addSubview(profileImageView)
         profileImageView.setDimensions(height: 45, width: 45)
         profileImageView.layer.cornerRadius = 45 / 2
         profileImageView.centerY(inView: self, leftAnchor: leftAnchor, paddingLeft: 12)
         
-        addSubview(usernameLabel)
+        contentView.addSubview(usernameLabel)
         usernameLabel.centerY(inView: self)
+        usernameLabel.setDimensions(height: 40, width: 200)
+        usernameLabel.layer.cornerRadius = 20
         usernameLabel.anchor(left: profileImageView.rightAnchor, paddingLeft: 8)
         
         contentView.addSubview(followButton)
         followButton.centerY(inView: self)
+        followButton.layer.cornerRadius = 14
         followButton.anchor(right: rightAnchor, paddingRight: 8, width: 80, height: 28)
         
         
@@ -78,6 +79,13 @@ class UserListTableViewCell: UITableViewCell {
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    // Update skeleton frames on layout changes
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        profileImageView.updateSkeletonFrame()
+        usernameLabel.updateSkeletonFrame()
     }
     
     
@@ -96,6 +104,9 @@ class UserListTableViewCell: UITableViewCell {
         followButton.setTitle(viewModel.buttonTitle, for: .normal)
         followButton.backgroundColor = viewModel.buttonBackgroundColor
         followButton.setTitleColor(viewModel.buttonTextColor, for: .normal)
+        
+        followButton.layer.borderWidth = 0.5
+        followButton.layer.cornerRadius = 3
     }
     
     

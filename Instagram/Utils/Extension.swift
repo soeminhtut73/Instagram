@@ -169,6 +169,54 @@ extension UIView {
 //        animation.repeatCount = .infinity
 //        gradientLayer.add(animation, forKey: nil)
     }
+    
+    // Start skeleton animation on this view
+    func showSkeletonAnimation() {
+        // Remove any existing skeleton layers first
+        hideSkeletonAnimation()
+        
+        // Create a gradient layer for the skeleton effect
+        let gradientLayer = CAGradientLayer()
+        gradientLayer.name = "SkeletonLayer"
+        gradientLayer.frame = self.bounds
+        gradientLayer.cornerRadius = self.layer.cornerRadius
+        gradientLayer.masksToBounds = true
+        gradientLayer.colors = [
+            UIColor.lightGray.withAlphaComponent(0.3).cgColor,
+            UIColor.lightGray.withAlphaComponent(0.7).cgColor,
+            UIColor.lightGray.withAlphaComponent(0.3).cgColor
+        ]
+        gradientLayer.locations = [0.0, 0.5, 1.0]
+        gradientLayer.startPoint = CGPoint(x: 0.0, y: 0.5)
+        gradientLayer.endPoint = CGPoint(x: 1.0, y: 0.5)
+        
+        // Add the gradient layer to the view's layer hierarchy
+        self.layer.addSublayer(gradientLayer)
+        
+        // Create the animation for the gradient's locations
+        let animation = CABasicAnimation(keyPath: "locations")
+        animation.fromValue = [-1.0, -0.5, 0.0]
+        animation.toValue = [1.0, 1.5, 2.0]
+        animation.duration = 1.5
+        animation.repeatCount = .infinity
+        
+        gradientLayer.add(animation, forKey: "skeletonAnimation")
+    }
+    
+    // Remove the skeleton animation
+    func hideSkeletonAnimation() {
+        self.layer.sublayers?.removeAll(where: { $0.name == "SkeletonLayer" })
+    }
+    
+    // Update the gradient frame in case the view’s bounds change
+    func updateSkeletonFrame() {
+        self.layer.sublayers?.forEach { layer in
+            if layer.name == "SkeletonLayer" {
+                layer.frame = self.bounds
+            }
+        }
+    }
+    
 }
 
 
