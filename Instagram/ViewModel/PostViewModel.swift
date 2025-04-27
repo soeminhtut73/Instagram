@@ -7,6 +7,7 @@
 
 import UIKit
 import Firebase
+import FirebaseAuth
 
 struct  PostViewModel {
     var post: Post
@@ -40,12 +41,24 @@ struct  PostViewModel {
         return post.likes
     }
     
+    var ownerID : String {
+        return post.ownerID
+    }
+    
     var likeLabel : String {
         if likeCount <= 1 {
             return "\(likeCount) like"
         } else {
             return "\(likeCount) likes"
         }
+    }
+    
+    var hideEditButton : Bool {
+        return Auth.auth().currentUser?.uid != post.ownerID ? true : false
+    }
+    
+    var hidePlayButton : Bool {
+        return post.videoURL == nil
     }
     
     init(post: Post) {

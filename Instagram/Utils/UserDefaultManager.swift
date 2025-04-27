@@ -8,11 +8,14 @@
 import UIKit
 
 enum UserDefaultKey {
-    static let lastFetchPostTimestamp = "lastFetchPostTimestamp"
+//    static let lastFetchPostTimestamp = "lastFetchPostTimestamp"
     static let followingUsersIds = "followingUsersIds"
+
+    static let deviceToken = "deviceToken"
 }
 
-class UserDefaultManager {
+
+class UserDefaultManager {  // FollowingUsersDefaults
     
     static let shared = UserDefaultManager()
     private let userDefaults = UserDefaults.standard
@@ -52,3 +55,22 @@ class UserDefaultManager {
         userDefaults.removeObject(forKey: UserDefaultKey.followingUsersIds)
     }
 }
+
+extension UserDefaultManager { // Save or Retrieve deviceToken
+    ///end point https://instagram-pushnotification-711825808880.us-central1.run.app
+    
+    var deviceToken: String? {
+        get {
+            return UserDefaults.standard.string(forKey: UserDefaultKey.deviceToken)
+        }
+        
+        set {
+            userDefaults.set(newValue, forKey: UserDefaultKey.deviceToken)
+        }
+    }
+    
+    func clearDeviceToken() {
+        userDefaults.removeObject(forKey: UserDefaultKey.deviceToken)
+    }
+}
+

@@ -25,7 +25,7 @@ class MainTabController: UITabBarController {
     override func viewDidLoad() {
         super.viewDidLoad()
         checkUserLoginStatus()
-        fetchCurrentUser()
+        
     }
     
     //MARK: - API
@@ -47,6 +47,8 @@ class MainTabController: UITabBarController {
                 nav.modalPresentationStyle = .fullScreen
                 self.present(nav, animated: true)
             }
+        } else {
+            fetchCurrentUser()
         }
     }
     
@@ -96,7 +98,11 @@ class MainTabController: UITabBarController {
 extension MainTabController: AuthenticationDelegate {
     
     func didAuthenticate() {
-        print("Debug: Did authenticated")
+        guard let userID = Auth.auth().currentUser?.uid else { return }
+        
+        let token = UserDefaultManager.shared.deviceToken
+        DeviceToken.saveDeviceToken(currentUid: userID, token: token ?? "")
+        
         fetchCurrentUser()
         self.dismiss(animated: true)
     }
@@ -113,7 +119,7 @@ extension MainTabController: UITabBarControllerDelegate {
         
         if index == 2 {
             var config = YPImagePickerConfiguration()
-            config.library.mediaType = .photo
+            config.library.mediaType = .photoAndVideo
             config.shouldSaveNewPicturesToAlbum = false
             config.startOnScreen = .library
             config.screens = [.library]
@@ -130,16 +136,22 @@ extension MainTabController: UITabBarControllerDelegate {
             picker.didFinishPicking { items, _ in
                 
                 picker.dismiss(animated: false) {
-                    guard let image = items.singlePhoto?.image else { return }
-                    
                     let controller = UploadPostController()
                     controller.delegate = self
-                    controller.selectedImage = image
                     controller.user = user
+                    
+                    if let item = items.first {
+                        switch item {
+                        case .photo(let photo):
+                            controller.selectedImage = photo.image
+                        case .video(let video):
+                            controller.selectedVideo = video
+                        }
+                    }
                     
                     let nav = UINavigationController(rootViewController: controller)
                     nav.modalPresentationStyle = .fullScreen
-                    self.present(nav, animated: false)
+                    self.present(nav, animated: true)
                 }
             }
         }

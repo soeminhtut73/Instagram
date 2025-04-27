@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import SkeletonView
 
 protocol UserListTableViewCellDelegate: AnyObject {
     func didTapFollowButton(for cell: UserListTableViewCell, toUserId userId: String)
@@ -31,6 +32,7 @@ class UserListTableViewCell: UITableViewCell {
         imageView.contentMode = .scaleAspectFill
         imageView.clipsToBounds = true
         imageView.backgroundColor = .clear
+        imageView.isSkeletonable = true
         return imageView
     }()
     
@@ -38,6 +40,7 @@ class UserListTableViewCell: UITableViewCell {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: 14, weight: .medium)
         label.textColor = .label
+        label.isSkeletonable = true
         return label
     }()
     
@@ -45,6 +48,7 @@ class UserListTableViewCell: UITableViewCell {
         let button = UIButton(type: .system)
         button.setTitleColor(.label, for: .normal)
         button.titleLabel?.font = UIFont.systemFont(ofSize: 12, weight: .medium)
+        button.isSkeletonable = true
         
         button.backgroundColor = .clear
         button.addTarget(self, action: #selector(handleFollowButton), for: .touchUpInside)
@@ -57,6 +61,9 @@ class UserListTableViewCell: UITableViewCell {
         super.init(style: style, reuseIdentifier: reuseIdentifier)
         
         selectionStyle = .none
+        
+        isSkeletonable = true
+        contentView.isSkeletonable = true
         
         contentView.addSubview(profileImageView)
         profileImageView.setDimensions(height: 45, width: 45)
@@ -81,12 +88,6 @@ class UserListTableViewCell: UITableViewCell {
         fatalError("init(coder:) has not been implemented")
     }
     
-    // Update skeleton frames on layout changes
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        profileImageView.updateSkeletonFrame()
-        usernameLabel.updateSkeletonFrame()
-    }
     
     
     //MARK: - HelperFunctions

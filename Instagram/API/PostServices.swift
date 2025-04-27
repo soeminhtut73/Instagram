@@ -8,16 +8,15 @@
 import UIKit
 import Firebase
 import FirebaseAuth
+import YPImagePicker
 
 struct PostServices {
     
     static func uploadPost(user: User, image: UIImage, caption: String, completion: @escaping(FirestoreCompletion)) {
         
-        guard let uID = Auth.auth().currentUser?.uid else { return }
-        
         ImageUploader.uploadImage(image: image, image_path: "post_images") { imageURL in
             
-            let postData: [String: Any] = ["ownerID"            : uID,
+            let postData: [String: Any] = ["ownerID"            : user.uid,
                                            "profileImageURL"    : user.profileImageUrl,
                                            "username"           : user.username,
                                            "caption"            : caption,
@@ -27,6 +26,50 @@ struct PostServices {
             
             COLLECTION_POSTS.addDocument(data: postData, completion: completion)
         }
+    }
+    
+    static func uploadPostWithVideo(user: User, thumbnailImage: UIImage, video: YPMediaVideo, caption: String, completion: @escaping(FirestoreCompletion)) {
+        
+        ImageUploader.uploadImage(image: thumbnailImage, image_path: "post_images") { imageURL in
+            ImageUploader.uploadVideo(video: video.url, video_path: "post_videos") { videoURL in
+                let postData: [String: Any] = ["ownerID"            : user.uid,
+                                               "profileImageURL"    : user.profileImageUrl,
+                                               "username"           : user.username,
+                                               "caption"            : caption,
+                                               "likes"              : 0,
+                                               "imageURL"           : imageURL,
+                                               "videoURL"           : videoURL,
+                                               "timestamp"          : Timestamp(date: Date())]
+                
+                COLLECTION_POSTS.addDocument(data: postData, completion: completion)
+            }
+        }
+    }
+    
+    static func updatePost(forPost postId: String, newPostImageURL: String? = nil, newCaption: String? = nil, completion: @escaping(FirestoreCompletion)) {
+        
+        let updateData = ["caption" : newCaption,
+                          "imageURL" : newPostImageURL].compactMapValues{ $0 }
+        
+        guard !updateData.isEmpty else {
+            print("Debug: no update to performed.")
+            completion(nil)
+            return }
+        
+        print("Debug: updateData : \(updateData)")
+        
+        let postRef = COLLECTION_POSTS.document(postId)
+        
+        postRef.updateData(updateData) { error in
+            if let error = error {
+                print("Debug: Error updating user data : \(error.localizedDescription)")
+                completion(error)
+            }
+            print("Debug: Successfully updated user profile.")
+            completion(nil)
+        }
+        
+        
     }
     
     // get posts for main feed view - limit - 20
@@ -170,4 +213,5 @@ struct PostServices {
             completion(exist)
         }
     }
+    
 }

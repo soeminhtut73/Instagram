@@ -23,6 +23,8 @@ class ProfileController: UICollectionViewController {
     
     private var posts = [Post]()
     
+    let refresher = UIRefreshControl()
+    
     //MARK: - Lifecycle
     
     override func viewDidLoad() {
@@ -75,8 +77,16 @@ class ProfileController: UICollectionViewController {
         navigationItem.title = user.username
         collectionView.backgroundColor = .white
         
+//        refresher.addTarget(self, action: #selector(refreshData), for: .touchUpInside)
+//        collectionView.refreshControl = refresher
+        
         collectionView.register(ProfileCell.self, forCellWithReuseIdentifier: reuseIdentifier)
         collectionView.register(ProfileHeaderCell.self, forSupplementaryViewOfKind: UICollectionView.elementKindSectionHeader, withReuseIdentifier: headerIdentifier)
+    }
+    
+    //MARK: - Selector
+    @objc func refreshData() {
+        
     }
     
 }
@@ -156,15 +166,15 @@ extension ProfileController: ProfileHeaderCellDelegate {
 
     func didTapEditProfileFollowButton(_ cell: ProfileHeaderCell, didTapButtonFor user: User) {
         
-        guard let mainTab = tabBarController as? MainTabController else { return }
+//        guard let mainTab = tabBarController as? MainTabController else { return }
 //        guard let currentUser = mainTab.user else { return }
         
-        /// to edit profile
-        if user.isCurrentUser {
-            print("debug: to edit profile")
+        if user.isCurrentUser {  // to edit profile
+            let vc = EditProfileViewController(user: user)
+            vc.delegate = self
+            navigationController?.pushViewController(vc, animated: true)
             
-        /// configure to unfollow on user tab button
-        } else if user.isFollowed {
+        } else if user.isFollowed {   // configure to unfollow on user tab button
             
             self.user.isFollowed = false
             let followers = user.stats?.followers ?? 0
@@ -174,8 +184,7 @@ extension ProfileController: ProfileHeaderCellDelegate {
                 self.collectionView.reloadData()
             }
             
-        /// configure to follow on user tab
-        } else {
+        } else {   // configure to follow on user tab
             
             self.user.isFollowed = true
             self.user.stats?.followers += 1
@@ -194,6 +203,7 @@ extension ProfileController: ProfileHeaderCellDelegate {
         controller.user = user
         
         navigationController?.pushViewController(controller, animated: true)
+//        navigationController?.pushViewController(SkeletonViewController(), animated: true)
     }
     
     func didTapFollowingLabel(_ cell: ProfileHeaderCell, didTapButtonFor user: User, type: buttonType) {
@@ -203,4 +213,18 @@ extension ProfileController: ProfileHeaderCellDelegate {
         
         navigationController?.pushViewController(controller, animated: true)
     }
+}
+
+//MARK: - EditProfileViewControllerDelegate
+
+extension ProfileController: ProfileUpdateDelegate {
+    
+    func didUpdateProfile(_ controller: EditProfileViewController, _ newImageUrl: String, _ newUsername: String) {
+        user.profileImageUrl = newImageUrl
+        user.username = newUsername
+        configureUI()
+        collectionView.reloadData()
+    }
+    
+    
 }

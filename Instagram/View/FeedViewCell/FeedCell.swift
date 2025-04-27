@@ -6,14 +6,21 @@
 //
 
 import UIKit
+import FirebaseAuth
 import SDWebImage
 
 protocol FeedCellDelegate : AnyObject {
+    func didTapPostImageView(_ cell: FeedCell, for postImage: UIImage)
+    
     func didTapCommentButton(_ cell: FeedCell, for post: Post)
     
     func didTapLikeButton(_ cell: FeedCell, for post: Post)
     
     func didTapUsernameButton(_ cell: FeedCell, for uid: String)
+    
+    func didTapEditButton(_ cell: FeedCell, for post: Post)
+    
+    func didTapPlayButton(_ cell: FeedCell, for post: Post)
 }
 
 class FeedCell: UICollectionViewCell {
@@ -35,7 +42,6 @@ class FeedCell: UICollectionViewCell {
         imageView.layer.masksToBounds = true
         imageView.isUserInteractionEnabled = true
         
-        
         return imageView
     }()
     
@@ -43,8 +49,16 @@ class FeedCell: UICollectionViewCell {
         let button = UIButton()
         button.setTitleColor(.black, for: .normal)
         button.titleLabel?.font = .systemFont(ofSize: 13, weight: .bold)
-//        button.setTitle("venom", for: .normal)
         button.addTarget(self, action: #selector (handleUsernameButtonPressed), for: .touchUpInside)
+        return button
+    }()
+    
+    private lazy var editButton: UIButton = {
+        let button = UIButton()
+        let img = UIImage(systemName: "slider.horizontal.3")
+        button.tintColor = .black
+        button.setImage(img, for: .normal)
+        button.addTarget(self, action: #selector(handleEditButtonPressed), for: .touchUpInside)
         return button
     }()
     
@@ -56,10 +70,21 @@ class FeedCell: UICollectionViewCell {
         imageView.image = UIImage(named: "venom-7")
 
         imageView.isUserInteractionEnabled = true
-        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handleUsernameButtonPressed))
+        let tapGesture = UITapGestureRecognizer(target: self, action: #selector(handlePostImageViewTapped))
         imageView.addGestureRecognizer(tapGesture)
         
         return imageView
+    }()
+    
+    private lazy var playButton: UIButton = {
+        let button = UIButton(type: .system)
+        let img = UIImage(systemName: "play.fill")
+        button.tintColor = .white
+        button.backgroundColor = UIColor.black.withAlphaComponent(0.6)
+        button.setImage(img, for: .normal)
+        button.layer.cornerRadius = 8
+        button.addTarget(self, action: #selector(handlePayButtonPressed), for: .touchUpInside)
+        return button
     }()
     
     public lazy var likeButton: UIButton = {
@@ -132,6 +157,11 @@ class FeedCell: UICollectionViewCell {
         usernameButton.anchor(left: profileImageView.rightAnchor, paddingLeft: 12)
         usernameButton.centerY(inView: profileImageView)
         
+        addSubview(editButton)
+        editButton.setDimensions(height: 36, width: 36)
+        editButton.anchor(right: rightAnchor, paddingRight: 10)
+        editButton.centerY(inView: profileImageView)
+        
         /// set layout for postImageView
         addSubview(postImageView)
         postImageView.anchor(top: profileImageView.bottomAnchor,
@@ -139,6 +169,11 @@ class FeedCell: UICollectionViewCell {
                              paddingTop: 8)
         postImageView.centerX(inView: self)
         postImageView.heightAnchor.constraint(equalTo: widthAnchor, multiplier: 1).isActive = true
+        
+        addSubview(playButton)
+        playButton.setDimensions(height: 50, width: 50)
+        playButton.centerX(inView: postImageView)
+        playButton.centerY(inView: postImageView)
         
         /// set layout for buttons stackView
         configureStackView()
@@ -173,6 +208,12 @@ class FeedCell: UICollectionViewCell {
     
     //MARK: - Selector
     
+    @objc func handlePostImageViewTapped() {
+        guard let postImage = postImageView.image else { return }
+        
+        delegate?.didTapPostImageView(self, for: postImage)
+    }
+    
     @objc func handleUsernameButtonPressed() {
         guard let viewModel = postViewModel else { return }
         
@@ -195,6 +236,18 @@ class FeedCell: UICollectionViewCell {
         print("handleShareButtonPressed")
     }
     
+    @objc func handleEditButtonPressed() {
+        guard let viewModel = postViewModel else { return }
+        
+        delegate?.didTapEditButton(self, for: viewModel.post)
+    }
+    
+    @objc func handlePayButtonPressed() {
+        guard let viewModel = postViewModel else { return }
+        
+        delegate?.didTapPlayButton(self, for: viewModel.post)
+    }
+    
     //MARK: - Helper Functions
     
     func configureStackView() {
@@ -210,6 +263,9 @@ class FeedCell: UICollectionViewCell {
     func configurePostViewModelData() {
         guard let viewModel = postViewModel else { return }
         
+        editButton.isHidden = viewModel.hideEditButton
+        playButton.isHidden = viewModel.hidePlayButton
+        
         profileImageView.sd_setImage(with: viewModel.profileImageURL)
         usernameButton.setTitle(viewModel.username, for: .normal)
         postImageView.sd_setImage(with: viewModel.imageURL)
@@ -218,7 +274,6 @@ class FeedCell: UICollectionViewCell {
         likeButton.setImage(viewModel.likeButtonImage, for: .normal)
         likeButton.tintColor = viewModel.likeButtonTintColor
         likesLabel.text = "\(viewModel.likeLabel)"
-        
-        
     }
 }
+

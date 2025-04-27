@@ -190,8 +190,6 @@ class ProfileHeaderCell: UICollectionReusableView {
         
         guard let viewModel = viewModel else { return }
         
-        print("Debug: did call after tap")
-        
         profileImageView.sd_setImage(with: viewModel.profileImageURL)
         nameLabel.text = viewModel.fullname
         

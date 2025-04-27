@@ -14,10 +14,12 @@ class CustomTextField: UITextField {
         
         font = .systemFont(ofSize: 14)
         borderStyle = .none
-        textColor = .white
+        textColor = .label
         keyboardAppearance = .dark
-        backgroundColor = UIColor(white: 1, alpha: 0.1)
-        attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor : UIColor(white: 1, alpha: 0.5)])
+//        backgroundColor = UIColor(white: 1, alpha: 0.1)
+//        attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor : UIColor(white: 1, alpha: 0.5)])
+        backgroundColor = .systemBackground
+        attributedPlaceholder = NSAttributedString(string: placeholder, attributes: [.foregroundColor : UIColor.label])
         setHeight(50)
         layer.cornerRadius = 10
         leftViewMode = .always

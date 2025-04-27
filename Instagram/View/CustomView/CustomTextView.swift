@@ -30,13 +30,11 @@ class CustomTextView: UITextView {
             if placeholderShouldCenterY {
                 
                 placeholderLabel.anchor(left: leftAnchor, right: rightAnchor, paddingLeft: 8)
-                
                 placeholderLabel.centerY(inView: self)
                 
             } else {
                 
                 placeholderLabel.anchor(top: topAnchor, left: leftAnchor, right: rightAnchor, paddingTop: 6.5, paddingLeft: 5, paddingRight: 5)
-                
             }
         }
     }
@@ -47,7 +45,6 @@ class CustomTextView: UITextView {
         super.init(frame: frame, textContainer: textContainer)
         
         addSubview(placeholderLabel)
-        
         
         NotificationCenter.default.addObserver(self, selector: #selector(textDidChange), name: UITextView.textDidChangeNotification, object: nil)
     }

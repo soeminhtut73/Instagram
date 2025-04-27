@@ -28,6 +28,33 @@ struct UserServices {
         }
     }
     
+    // update user-data
+    static func updateUserProfile(for user: User, username newUsername: String? = nil, profileImageURL newProfileImageURL: String? = nil, completion: @escaping FirestoreCompletion) {
+        
+        let updateData = ["username" : newUsername,
+                          "profileImageUrl" : newProfileImageURL].compactMapValues { $0 }
+        
+        guard !updateData.isEmpty else {
+            print("Debug: no update to performed.")
+            completion(nil)
+            return }
+        
+        print("Debug: updateData : \(updateData)")
+        
+        let userRef = COLLECTION_USERS.document(user.uid)
+        
+        userRef.updateData(updateData) { error in
+            
+            if let error = error {
+                print("Debug: Error updating user data : \(error.localizedDescription)")
+                completion(error)
+            }
+            print("Debug: Successfully updated user profile.")
+            completion(nil)
+        }
+        
+    }
+    
     // get all of users collection
     static func getAllUsers(completion: @escaping ([User]) -> Void) {
         

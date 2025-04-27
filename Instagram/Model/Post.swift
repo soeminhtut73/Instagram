@@ -13,10 +13,11 @@ struct Post {
     let postID          : String
     var caption         : String
     var likes           : Int
-    let imageURL        : String
+    var imageURL        : String
     let timestamp       : Timestamp
     let username        : String
     let profileImageURL : String
+    let videoURL        : String?
     
     var didLike : Bool = false
     
@@ -29,5 +30,6 @@ struct Post {
         self.timestamp          = dictionary["timestamp"] as? Timestamp ?? Timestamp(date: Date())
         self.username           = dictionary["username"] as? String ?? ""
         self.profileImageURL    = dictionary["profileImageURL"] as? String ?? ""
+        self.videoURL           = dictionary["videoURL"] as? String ?? nil
     }
 }

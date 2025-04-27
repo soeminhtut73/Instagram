@@ -15,3 +15,4 @@ let COLLECTION_FOLLOWER_USERS = Firestore.firestore().collection("user-followers
 let COLLECTION_POSTS = Firestore.firestore().collection("posts")
 let COLLECTION_NOTIFICATIONS = Firestore.firestore().collection("notifications")
 
+let COLLECTION_DEVICE_TOKENS = Firestore.firestore().collection("device-tokens")

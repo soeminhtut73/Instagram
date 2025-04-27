@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import FirebaseAuth
 
 protocol AuthenticationDelegate: AnyObject {
     func didAuthenticate()

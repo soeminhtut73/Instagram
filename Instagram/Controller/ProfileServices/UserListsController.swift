@@ -6,24 +6,35 @@
 //
 
 import UIKit
+import SkeletonView
 
 private let reuseIdentifier = "UserCell"
 
-class UserListsController: UITableViewController {
+class UserListsController: UIViewController {
     
     //MARK: - Properties
     
     var user : User? {
         didSet{
-//            fetchUsers()
+            fetchUsers()
+            configureUI()
         }
     }
     
     private var users = [User]() {
         didSet {
-//            tableView.reloadData()
+//            tableView.hideSkeleton(reloadDataAfter: true, transition: .crossDissolve(0.25))
+            tableView.reloadData()
         }
     }
+    
+    private var tableView : UITableView = {
+        let tableView = UITableView()
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.rowHeight = 64
+        tableView.estimatedRowHeight = 64
+        return tableView
+    }()
     
     var type: buttonType?
     
@@ -31,40 +42,17 @@ class UserListsController: UITableViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        configureUI()
-//        fetchUsers()
+        
+        
+        tableView.isSkeletonable = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
-        // Loop through visible cells and show skeleton on specific subviews
-        for cell in tableView.visibleCells {
-            if let customCell = cell as? UserListTableViewCell {
-                customCell.profileImageView.showSkeletonAnimation()
-                customCell.usernameLabel.showSkeletonAnimation()
-                customCell.followButton.showSkeletonAnimation()
-            }
-        }
-        
-        fetchUsers()
-        
-        // Simulate data loading delay (e.g., API call)
-        DispatchQueue.main.asyncAfter(deadline: .now() + 8.0) { [weak self] in
-            guard let self = self else { return }
-            
-            self.tableView.reloadData()
-            
-            // Remove skeleton animations after data is loaded
-            for cell in self.tableView.visibleCells {
-                if let customCell = cell as? UserListTableViewCell {
-                    customCell.profileImageView.hideSkeletonAnimation()
-                    customCell.usernameLabel.hideSkeletonAnimation()
-                    customCell.followButton.hideSkeletonAnimation()
-                }
-            }
-        }
+        tableView.showAnimatedSkeleton()
+//        tableView.showSkeleton(usingColor: .wetAsphalt, transition: .crossDissolve(0.25))
     }
+    
     
     //MARK: - Helper Functions
     
@@ -75,6 +63,7 @@ class UserListsController: UITableViewController {
             UserServices.fetchFollowerUsers(withUser: user.uid) { users in
                 self.users = users
                 self.checkUserIsFollow()
+                
             }
         } else {
             UserServices.fetchFollowingUsers(withUser: user.uid) { users in
@@ -87,7 +76,6 @@ class UserListsController: UITableViewController {
         users.forEach { user in
             
             UserServices.checkUserFollowingStatus(uID: user.uid) { isFollow in
-                
                 if let index = self.users.firstIndex(where: { $0.uid == user.uid }) {
                     self.users[index].isFollowed = isFollow
                 }
@@ -97,10 +85,21 @@ class UserListsController: UITableViewController {
     
     func configureUI() {
         navigationItem.title = type?.buttonText
-        view.backgroundColor = .systemBackground
+        
+        view.addSubview(tableView)
+        NSLayoutConstraint.activate([
+                    tableView.topAnchor.constraint(equalTo: view.topAnchor),
+                    tableView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+                    tableView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    tableView.trailingAnchor.constraint(equalTo: view.trailingAnchor)
+        ])
         
         tableView.register(UserListTableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
-        tableView.rowHeight = 64
+        
+        tableView.translatesAutoresizingMaskIntoConstraints = false
+        
+        tableView.dataSource = self
+        
         tableView.separatorStyle = .none
     }
     
@@ -111,27 +110,31 @@ class UserListsController: UITableViewController {
 
 //MARK: - UITableView DataSource
 
-extension UserListsController {
+extension UserListsController: SkeletonTableViewDataSource {
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.isEmpty ? 1 : users.count
+    func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return 2
     }
     
-    override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+    func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier {
+        return reuseIdentifier
+    }
+    
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return users.count
+    }
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        
         let cell = tableView
             .dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! UserListTableViewCell
         
-        if users.isEmpty {
-            cell.isUserInteractionEnabled = false
-            return cell
-        } else {
-            guard let type = type else { return cell }
-            
-            cell.type = type
-            cell.user = users[indexPath.row]
-            cell.delegate = self
-            return cell
-        }
+        guard let type = type else { return cell }
+        
+        cell.type = type
+        cell.user = users[indexPath.row]
+        cell.delegate = self
+        return cell
     }
 }
 
@@ -139,7 +142,7 @@ extension UserListsController {
 
 extension UserListsController {
     
-    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
     }
 }
