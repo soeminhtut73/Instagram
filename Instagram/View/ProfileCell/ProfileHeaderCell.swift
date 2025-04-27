@@ -90,12 +90,11 @@ class ProfileHeaderCell: UICollectionReusableView {
         return button
     }()
     
-    private var listButton: UIButton = {
-        let button = UIButton()
-        button.setImage(UIImage(named: "list"), for: .normal)
-//        button.tintColor = UIColor(white: 0, alpha: 0.2)
-        return button
-    }()
+//    private var listButton: UIButton = {
+//        let button = UIButton()
+//        button.setImage(UIImage(named: "list"), for: .normal)
+//        return button
+//    }()
     
     private var ribbonButton: UIButton = {
         let button = UIButton()
@@ -146,7 +145,7 @@ class ProfileHeaderCell: UICollectionReusableView {
         stackView.centerY(inView: profileImageView)
         
         /// configure buttonStackView
-        let buttonStack = UIStackView(arrangedSubviews: [gripButton, listButton, ribbonButton])
+        let buttonStack = UIStackView(arrangedSubviews: [gripButton, ribbonButton])
         buttonStack.axis = .horizontal
         buttonStack.distribution = .fillEqually
         
