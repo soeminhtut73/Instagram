@@ -201,7 +201,7 @@ extension ProfileController: ProfileHeaderCellDelegate {
         let controller = UserListsController()
         controller.type = type
         controller.user = user
-        
+        controller.selectedSegmentIndex = 1
         navigationController?.pushViewController(controller, animated: true)
 //        navigationController?.pushViewController(SkeletonViewController(), animated: true)
     }
@@ -210,6 +210,7 @@ extension ProfileController: ProfileHeaderCellDelegate {
         let controller = UserListsController()
         controller.type = type
         controller.user = user
+        controller.selectedSegmentIndex = 0
         
         navigationController?.pushViewController(controller, animated: true)
     }

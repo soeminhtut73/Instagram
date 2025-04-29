@@ -9,7 +9,8 @@
 import UIKit
 import SkeletonView
 
-private let reuseIdentifier = "UserCell"
+private let followingTableCell = "FollowingCell"
+private let followerTableCell = "FollowerCell"
 
 class UserListsController: UIViewController {
     
@@ -23,50 +24,36 @@ class UserListsController: UIViewController {
     
     private var following = [User]() {
         didSet{
-            
+            followingTableView.reloadData()
         }
     }
     
     private var followers = [User]() {
         didSet{
-            
+            followerTableView.reloadData()
         }
     }
+
+    var selectedSegmentIndex: Int = 0
     
-    private var users = [User]() {
-        didSet {
-//            tableView.hideSkeleton(reloadDataAfter: true, transition: .crossDissolve(0.25))
-            tableView.reloadData()
-        }
-    }
-    
-    private var tableView : UITableView = {
+    private var followingTableView : UITableView = {
         let tableView = UITableView()
-        tableView.translatesAutoresizingMaskIntoConstraints = false
+        tableView.rowHeight = 64
+        tableView.estimatedRowHeight = 64
+        return tableView
+    }()
+    
+    private var followerTableView : UITableView = {
+        let tableView = UITableView()
         tableView.rowHeight = 64
         tableView.estimatedRowHeight = 64
         return tableView
     }()
     
     private let segmentControl: UISegmentedControl = {
-        let sc = UISegmentedControl(items: ["Followers", "Following"])
-        sc.selectedSegmentIndex = 0
+        let sc = UISegmentedControl(items: ["Following", "Followers"])
         sc.translatesAutoresizingMaskIntoConstraints = false
         return sc
-    }()
-    
-    private let gridView: UIView = {
-        let view = UIView()
-        view.translatesAutoresizingMaskIntoConstraints = false
-        return view
-    }()
-    
-    private let listView: UIView = {
-        let view = UIView()
-        view.backgroundColor = .systemGreen // Just for demo
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.isHidden = true
-        return view
     }()
     
     var type: buttonType?
@@ -75,10 +62,11 @@ class UserListsController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
         configureUI()
         setupSegmentControl()
         setupPanGesture()
-        tableView.isSkeletonable = true
+//        tableView.isSkeletonable = true
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -90,38 +78,50 @@ class UserListsController: UIViewController {
     
     //MARK: - Helper Functions
     
+    private func setupSegmentControl() {
+        segmentControl.selectedSegmentIndex = selectedSegmentIndex
+        segmentControl.addTarget(self, action: #selector(segmentChanged(_:)), for: .valueChanged)
+        updateViewForSelectedSegment()
+    }
+    
     private func setupPanGesture() {
         let panGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePan(_:)))
         view.addGestureRecognizer(panGesture)
     }
     
-    private func setupSegmentControl() {
-        navigationItem.titleView = segmentControl
-        segmentControl.addTarget(self, action: #selector(segmentChanged(_:)), for: .valueChanged)
-    }
-    
-    func fetchUsers() {
-        guard let user = user else { return }
-        
-        if type == .followers {
-            UserServices.fetchFollowerUsers(withUser: user.uid) { users in
-                self.users = users
-                self.checkUserIsFollow()
-                self.tableView.hideSkeleton()
-            }
+    private func updateViewForSelectedSegment() {
+        if segmentControl.selectedSegmentIndex == 0 {
+            followingTableView.isHidden = false
+            followerTableView.isHidden = true
         } else {
-            UserServices.fetchFollowingUsers(withUser: user.uid) { users in
-                self.users = users
-                self.tableView.hideSkeleton()
-            }
+            followingTableView.isHidden = true
+            followerTableView.isHidden = false
         }
     }
     
-    func checkUserIsFollow() {
-        users.forEach { user in
-            UserServices.checkUserFollowingStatus(uID: user.uid) { isFollow in
-                if let index = self.users.firstIndex(where: { $0.uid == user.uid }) {
-                    self.users[index].isFollowed = isFollow
+    private func fetchUsers() {
+        guard let user = user else { return }
+        
+        UserServices.fetchFollowingUsers(withUser: user.uid) { users in
+            self.following = users
+            
+            users.forEach { user in
+                UserServices.checkUserFollowingStatus(uID: user.uid) { isFollow in
+                    if let index = self.following.firstIndex(where: { $0.uid == user.uid }) {
+                        self.following[index].isFollowed = isFollow
+                    }
+                }
+            }
+        }
+        
+        UserServices.fetchFollowerUsers(withUser: user.uid) { users in
+            self.followers = users
+            
+            users.forEach { user in
+                UserServices.checkUserFollowingStatus(uID: user.uid) { isFollow in
+                    if let index = self.followers.firstIndex(where: { $0.uid == user.uid }) {
+                        self.followers[index].isFollowed = isFollow
+                    }
                 }
             }
         }
@@ -129,36 +129,37 @@ class UserListsController: UIViewController {
     
     private func configureUI() {
         
-        view.addSubview(gridView)
-        view.addSubview(listView)
+        navigationItem.title = user?.username
         
-        NSLayoutConstraint.activate([
-            gridView.topAnchor.constraint(equalTo: view.topAnchor, constant: 16),
-            gridView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            gridView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            gridView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-            
-            listView.topAnchor.constraint(equalTo: view.bottomAnchor, constant: 16),
-            listView.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            listView.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            listView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
-        ])
+        view.addSubview(segmentControl)
+        segmentControl.anchor(top: view.safeAreaLayoutGuide.topAnchor, paddingTop: 12, width: view.frame.width/2)
+        segmentControl.centerX(inView: view)
         
-        gridView.addSubview(tableView)
-        NSLayoutConstraint.activate([
-                    tableView.topAnchor.constraint(equalTo: gridView.topAnchor),
-                    tableView.bottomAnchor.constraint(equalTo: gridView.bottomAnchor),
-                    tableView.leadingAnchor.constraint(equalTo: gridView.leadingAnchor),
-                    tableView.trailingAnchor.constraint(equalTo: gridView.trailingAnchor)
-        ])
-
-        tableView.register(UserListTableViewCell.self, forCellReuseIdentifier: reuseIdentifier)
-
-        tableView.translatesAutoresizingMaskIntoConstraints = false
-
-        tableView.dataSource = self
-
-        tableView.separatorStyle = .none
+        
+        
+        view.addSubview(followingTableView)
+        view.addSubview(followerTableView)
+        
+        followingTableView.anchor(top: segmentControl.safeAreaLayoutGuide.bottomAnchor,
+                                  left: view.leftAnchor,
+                                  bottom: view.safeAreaLayoutGuide.bottomAnchor,
+                                  right: view.rightAnchor,
+                                  paddingTop: 16)
+        followingTableView.register(UserListTableViewCell.self, forCellReuseIdentifier: followingTableCell)
+        followingTableView.dataSource = self
+        followingTableView.separatorStyle = .none
+        
+        followerTableView.anchor(top: segmentControl.safeAreaLayoutGuide.bottomAnchor,
+                                  left: view.leftAnchor,
+                                  bottom: view.safeAreaLayoutGuide.bottomAnchor,
+                                  right: view.rightAnchor,
+                                  paddingTop: 16)
+        followerTableView.register(UserListTableViewCell.self, forCellReuseIdentifier: followerTableCell)
+        followerTableView.dataSource = self
+        followerTableView.separatorStyle = .none
+        
+        followerTableView.isHidden = true
+        
     }
     
     
@@ -168,9 +169,9 @@ class UserListsController: UIViewController {
         let translation = gesture.translation(in: view)
         
         // Determine current and next views
-        let isGridSelected = segmentControl.selectedSegmentIndex == 0
-        let currentView = isGridSelected ? gridView : listView
-        let nextView = isGridSelected ? listView : gridView
+        let isFollowingTableViewSelected = segmentControl.selectedSegmentIndex == 0
+        let currentView = isFollowingTableViewSelected ? followingTableView : followerTableView
+        let nextView = isFollowingTableViewSelected ? followerTableView : followingTableView
         
         if gesture.state == .began {
             // Prepare next view
@@ -198,7 +199,7 @@ class UserListsController: UIViewController {
                 }, completion: { _ in
                     currentView.isHidden = true
                     currentView.transform = .identity
-                    self.segmentControl.selectedSegmentIndex = isGridSelected ? 1 : 0
+                    self.segmentControl.selectedSegmentIndex = isFollowingTableViewSelected ? 1 : 0
                 })
             } else {
                 // Not enough swipe: return to original position
@@ -213,62 +214,48 @@ class UserListsController: UIViewController {
     }
     
     @objc private func segmentChanged(_ sender: UISegmentedControl) {
-        let isGridSelected = sender.selectedSegmentIndex == 0 // grip = true | list = false
-        
-        let fromView = isGridSelected ? listView : gridView
-        let toView = isGridSelected ? gridView : listView
-            
-        // Bring new view to front
-        view.bringSubviewToFront(toView)
-        
-        let width = view.frame.width
-        let offset = isGridSelected ? -width : width
-        
-        // Move new view off screen
-        toView.transform = CGAffineTransform(translationX: offset, y: 0)
-        toView.isHidden = false
-        
-        UIView.animate(withDuration: 0.3, animations: {
-            // Slide old view away
-            fromView.transform = CGAffineTransform(translationX: -offset, y: 0)
-            
-            // Slide new view into place
-            toView.transform = .identity
-        }, completion: { _ in
-            fromView.isHidden = true
-            fromView.transform = .identity
-        })
+        updateViewForSelectedSegment()
     }
     
 }
 
 //MARK: - UITableView DataSource
 
-extension UserListsController: SkeletonTableViewDataSource {
+extension UserListsController: UITableViewDataSource {
     
-    func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return 2
-    }
-    
-    func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier {
-        return reuseIdentifier
-    }
+//    func collectionSkeletonView(_ skeletonView: UITableView, numberOfRowsInSection section: Int) -> Int {
+//        return 2
+//    }
+//    
+//    func collectionSkeletonView(_ skeletonView: UITableView, cellIdentifierForRowAt indexPath: IndexPath) -> ReusableCellIdentifier {
+//        return reuseIdentifier
+//    }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return users.count
+        if tableView == followingTableView {
+            return following.count
+        } else {
+            return followers.count
+        }
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView
-            .dequeueReusableCell(withIdentifier: reuseIdentifier, for: indexPath) as! UserListTableViewCell
-        
-        guard let type = type else { return cell }
-        
-        cell.type = type
-        cell.user = users[indexPath.row]
-        cell.delegate = self
-        return cell
+        if tableView == followingTableView {
+            let cell = tableView
+                .dequeueReusableCell(withIdentifier: followingTableCell, for: indexPath) as! UserListTableViewCell
+            cell.type = .followings
+            cell.user = following[indexPath.row]
+            cell.delegate = self
+            return cell
+        } else {
+            let cell = tableView
+                .dequeueReusableCell(withIdentifier: followerTableCell, for: indexPath) as! UserListTableViewCell
+            cell.type = .followers
+            cell.user = followers[indexPath.row]
+            cell.delegate = self
+            return cell
+        }
     }
 }
 
